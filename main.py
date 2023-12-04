@@ -2,7 +2,7 @@ import csv
 import datetime
 import os
 
-VERSION = "1.0"
+VERSION = "1.1.0"
 
 
 def record_exam_performance():
@@ -97,14 +97,35 @@ def record_exam_performance():
         section_time_list.append(section_time)
 
     # Append section scores to the last row
-    exam_performance_data.append(("Sections", "Score", "Time used", "", ""))
+    exam_performance_data.append(
+        ("Sections", "Amount", "Correct", "Percentage", "Time used")
+    )
+
+    all_section_amount = 0
+
     for section, score in enumerate(scores, start=1):
+        section_amount = len(user_answers[section - 1])
+        all_section_amount += section_amount
         exam_performance_data.append(
-            (f"Section {section}", score, section_time_list[section - 1], "", "")
+            (
+                f"Section {section}",
+                section_amount,
+                score,
+                f"{score / section_amount * 100:.2f}%",
+                section_time_list[section - 1],
+            )
         )
 
+    sum_score = sum(scores)
+
     exam_performance_data.append(
-        (f"Total", sum(scores), sum(section_time_list, datetime.timedelta(0)), "", "")
+        (
+            f"Total",
+            all_section_amount,
+            sum_score,
+            f"{sum_score / all_section_amount * 100:.2f}%",
+            sum(section_time_list, datetime.timedelta(0)),
+        )
     )
 
     if not os.path.exists(output_path):
@@ -147,3 +168,4 @@ def record_exam_performance():
 
 # Run the function to record exam performance
 record_exam_performance()
+input("Press Enter to exit")
