@@ -1,0 +1,14 @@
+Total Time,Question Number,Your Answer,Correct Answer,Time Used
+Section 1,,,,
+0:00:05.375182,1,1,1,0:00:05.375182
+0:00:08.982568,2,4,2,0:00:03.607386
+Section 2,,,,
+0:00:14.119117,3,3,1,0:00:05.136549
+0:00:18.255467,4,4,4,0:00:04.136350
+Section 3,,,,
+0:02:40.544839,5,4,3,0:02:22.289372
+Sections Score,,,,
+Section 1,1,"[datetime.timedelta(seconds=8, microseconds=982568), datetime.timedelta(seconds=9, microseconds=272899), datetime.timedelta(seconds=142, microseconds=289372)]",,
+Section 2,1,"[datetime.timedelta(seconds=8, microseconds=982568), datetime.timedelta(seconds=9, microseconds=272899), datetime.timedelta(seconds=142, microseconds=289372)]",,
+Section 3,0,"[datetime.timedelta(seconds=8, microseconds=982568), datetime.timedelta(seconds=9, microseconds=272899), datetime.timedelta(seconds=142, microseconds=289372)]",,
+Total Score,2,,,

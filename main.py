@@ -1,99 +1,149 @@
 import csv
 import datetime
+import os
+
+VERSION = "1.0"
+
 
 def record_exam_performance():
     # Get input for exam set information
     exam_set_name = input("Enter the name of the exam set: ")
-    num_sections = int(input("Enter the number of sections: "))
-    num_questions_per_section = int(input("Enter the number of questions per section: "))
+    num_questions = int(input("Enter the number of questions: "))
 
     # Get the current date and time for the filename
-    current_datetime = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    current_datetime = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
     # Create the CSV filename
+    output_path = f".\\output_{VERSION}"
     csv_filename = f"{exam_set_name}_{current_datetime}.csv"
 
     # Initialize data list to store exam performance
     exam_performance_data = []
 
+    # Initialize a list to store user answers for the current section
+    user_answers = []
+    start_time = datetime.datetime.now()
+    end_time_list = []
+
     # Initialize section counter and scores dictionary
-    section_counter = 1
-    scores = {section: 0 for section in range(1, num_sections + 1)}
+    section_number = 1
+    scores = []
+    section_time_list = []
+    question_number = 1
+    question_number_correct = 1
 
     # Input user answers for each section
-    for section in range(1, num_sections + 1):
-        print(f"\nSection {section}")
-
-        # Initialize a list to store user answers for the current section
-        user_answers = []
-
-        for question_number in range(1, num_questions_per_section + 1):
+    while question_number < num_questions + 1:
+        print(f"\nSection {section_number}")
+        section_user_answers = []
+        section_end_time_list = []
+        while question_number < num_questions + 1:
             user_answer = input(f"{question_number}. Your answer: ")
-            user_answers.append(user_answer)
+            if user_answer == ".":
+                section_number += 1
+                user_answers.append(section_user_answers)
+                end_time_list.append(section_end_time_list)
+                break
+            section_user_answers.append(user_answer)
+            section_end_time_list.append(datetime.datetime.now())
+            question_number += 1
 
-        # Record exam performance for each section
-        total_time_start = datetime.datetime.now()
-        for question_number, user_answer in enumerate(user_answers, start=1):
-            start_time = datetime.datetime.now()
+            time_range = abs(datetime.datetime.now() - start_time)
 
-            # Get correct answer (input later)
-            correct_answer = None
+            # Convert the total seconds into hours, minutes, and seconds
+            hours, remainder = divmod(time_range.total_seconds(), 3600)
+            minutes, seconds = divmod(remainder, 60)
 
-            end_time = datetime.datetime.now()
-            time_used = end_time - start_time
+            # Print the result
+            print(f"Time passed: {int(hours)}h {int(minutes)}m {int(seconds)}s")
 
-            # Append data to the list
-            exam_performance_data.append((
-                str(end_time - total_time_start),
-                f"Section {section}",
-                question_number,
-                user_answer,
-                correct_answer,
-                str(time_used)
-            ))
+    user_answers.append(section_user_answers)
+    end_time_list.append(section_end_time_list)
 
     # Input correct answers for each section
-    for section in range(1, num_sections + 1):
+    last_time = start_time
+    for section, answers_in_section in enumerate(user_answers, start=1):
         print(f"\nInput correct answers for Section {section}")
-        
-        # Initialize a dictionary to store correct answers for the current section
-        correct_answers = {}
-        
-        for question_number in range(1, num_questions_per_section + 1):
-            correct_answer = input(f"{question_number}. Enter correct answer: ")
-            correct_answers[question_number] = correct_answer
+        exam_performance_data.append((f"Section {section}", "", "", "", ""))
+        score = 0
+        section_time = datetime.timedelta(0)
 
         # Update the correct answers in the exam performance data
-        for i, data in enumerate(exam_performance_data):
-            if data[1] == f"Section {section}":
-                exam_performance_data[i] = (
-                    data[0],
-                    data[1],
-                    data[2],
-                    data[3],
-                    correct_answers[int(data[2])],  # Update correct answer
-                    data[5]
-                )
+        for i, answer in enumerate(answers_in_section, start=1):
+            correct_answer = input(f"{question_number_correct}. Enter correct answer: ")
 
-        # Calculate the score for each section
-        correct_count = sum(user_answer == correct_answers[int(data[2])] for data in exam_performance_data if data[1] == f"Section {section}")
-        section_score = (correct_count / num_questions_per_section) * 100
-        scores[section] = section_score
+            end_time = end_time_list[section - 1][i - 1]
+            time_used = end_time - last_time
+            last_time = end_time
+
+            section_time += time_used
+
+            if answer == correct_answer:
+                score += 1
+
+            # Append data to the list
+            exam_performance_data.append(
+                (
+                    str(end_time - start_time),
+                    question_number_correct,
+                    answer,
+                    correct_answer,
+                    str(time_used),
+                )
+            )
+            question_number_correct += 1
+
+        scores.append(score)
+        section_time_list.append(section_time)
 
     # Append section scores to the last row
-    exam_performance_data.append(("Total", "", "", "", "", ""))
-    for section, score in scores.items():
-        exam_performance_data.append(("Section Score", f"Section {section}", "", f"Score: {score:.2f}%", ""))
+    exam_performance_data.append(("Sections", "Score", "Time used", "", ""))
+    for section, score in enumerate(scores, start=1):
+        exam_performance_data.append(
+            (f"Section {section}", score, section_time_list[section - 1], "", "")
+        )
+
+    exam_performance_data.append(
+        (f"Total", sum(scores), sum(section_time_list, datetime.timedelta(0)), "", "")
+    )
+
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
 
     # Save data to CSV file
-    with open(csv_filename, "w", encoding="utf-8", newline="") as csv_file:
+    with open(
+        output_path + "\\" + csv_filename, "w", encoding="utf-8", newline=""
+    ) as csv_file:
         csv_writer = csv.writer(csv_file)
+
+        metadata = [
+            f"Title: {exam_set_name} Results",
+            "Date: " + current_datetime,
+            "Description: This CSV file contains exam results.",
+            f"Generated by: Exam Recorder version {VERSION} created by TGOD",
+        ]
+
+        for item in metadata:
+            csv_file.write(f"# {item}\n")
+
+        # Add an empty line as a separator between metadata and data
+        csv_file.write("\n")
+
         # Write header
-        csv_writer.writerow(["Total Time", "Section", "Question Number", "Your Answer", "Correct Answer", "Time Used"])
+        csv_writer.writerow(
+            [
+                "Total Time",
+                "Question Number",
+                "Your Answer",
+                "Correct Answer",
+                "Time Used",
+            ]
+        )
         # Write data
         csv_writer.writerows(exam_performance_data)
 
     print(f"Exam performance saved to {csv_filename}")
+
 
 # Run the function to record exam performance
 record_exam_performance()
