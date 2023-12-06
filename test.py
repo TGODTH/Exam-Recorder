@@ -1,0 +1,5 @@
+print(ord("A") - 64)
+print(ord("B") - 64)
+print(ord("C") - 64)
+print(ord("D") - 64)
+print(ord("E") - 64)

@@ -1,8 +1,9 @@
 import csv
 import datetime
 import os
+from reader import read_and_process_file
 
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 
 
 def record_exam_performance():
@@ -62,16 +63,29 @@ def record_exam_performance():
 
     # Input correct answers for each section
     last_time = start_time
+
+    # Get correct answers or path of it
+    print(f"\nInput correct answers")
+    correct_answers = input(f"{question_number_correct}. Enter correct answer: ")
+
+    if correct_answers.startswith("read "):
+        correct_answers = [
+            str(ord(x[1]) - 64) for x in read_and_process_file(correct_answers[5:])
+        ]
+    else:
+        correct_answers = [x for x in correct_answers]
+
+    if len(correct_answers) != num_questions:
+        raise Exception("Amount of questions and correct answers are mismatch.")
+
     for section, answers_in_section in enumerate(user_answers, start=1):
-        print(f"\nInput correct answers for Section {section}")
         exam_performance_data.append((f"Section {section}", "", "", "", ""))
         score = 0
         section_time = datetime.timedelta(0)
 
         # Update the correct answers in the exam performance data
         for i, answer in enumerate(answers_in_section, start=1):
-            correct_answer = input(f"{question_number_correct}. Enter correct answer: ")
-
+            correct_answer = correct_answers[question_number_correct - 1]
             end_time = end_time_list[section - 1][i - 1]
             time_used = end_time - last_time
             last_time = end_time
@@ -167,5 +181,9 @@ def record_exam_performance():
 
 
 # Run the function to record exam performance
-record_exam_performance()
-input("Press Enter to exit")
+try:
+    record_exam_performance()
+except Exception as error:
+    print(error)
+finally:
+    input("Press Enter to exit")
