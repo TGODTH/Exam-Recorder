@@ -1,5 +1,22 @@
 import csv
 
+
+def alphabet_to_numeric(letter):
+    letter_ord = ord(letter)
+    if letter_ord > 64 and letter_ord < 70:
+        numeric = ord(letter) - 64
+    elif letter_ord > 48 and letter_ord < 54:
+        numeric = ord(letter) - 48
+    elif letter_ord > 96 and letter_ord < 102:
+        numeric = ord(letter) - 96
+    else:
+        raise Exception(
+            "alphabet_to_numeric: Fail to convert answer to numeric (invalid answer)"
+        )
+
+    return numeric
+
+
 def read_and_process_file(file_path):
     # Read the TXT file
     with open(file_path, "r", encoding="utf-8") as file:
